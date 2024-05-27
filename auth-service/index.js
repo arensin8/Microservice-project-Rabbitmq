@@ -12,3 +12,7 @@ app.use((req, res, next) => {
 app.use((error, req, res, next) => {
   return res.json({ error: error.message });
 });
+
+app.listen(PORT, () => {
+  console.log("Auth-service running over port:", PORT);
+});
