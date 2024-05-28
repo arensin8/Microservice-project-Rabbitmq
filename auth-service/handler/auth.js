@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 AuthRouter.post("/register", async (req, res, next) => {
   try {
     const { password, name, email } = req.body;
-    const existUser = await UserMdoel.findOne({ email });
+    const existUser = await UserMdoel.findOne({ email }, { __v: 0 });
     if (existUser) throw { message: "User already exists" };
     const newUser = new UserMdoel({
       name,
