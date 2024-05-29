@@ -9,6 +9,11 @@ const connectTChannel = async () => {
     console.log("Cant connect to RabbitMQ server");
   }
 };
+const createQueue = async (queueName) => {
+  const channel = await createChannel();
+  await channel.assertQueue(queueName);
+  return channel;
+};
 
 const returnChannel = async () => {
   if (!channel) {
@@ -30,4 +35,5 @@ module.exports = {
   connectTChannel,
   pushToQueue,
   returnChannel,
+  createQueue,
 };

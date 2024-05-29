@@ -1,16 +1,18 @@
 const { default: mongoose } = require("mongoose");
 
-const UserSchema = new mongoose.Schema(
+const OrderSchema = new mongoose.Schema(
   {
-    name: String,
-    email: String,
-    password: String,
+    products: [{
+        _id: String,
+    }],
+    userEmail: String,
+    totalPrice: Number,
   },
   { timestamps: true }
 );
 
-const UserMdoel = mongoose.model("user", UserSchema);
+const OrderMdoel = mongoose.model("user", OrderSchema);
 
 module.exports = {
-  UserMdoel,
+  OrderMdoel,
 };

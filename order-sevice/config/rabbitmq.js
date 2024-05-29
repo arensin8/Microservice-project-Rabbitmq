@@ -1,4 +1,5 @@
 const amqp = require("amqplib");
+const { OrderMdoel } = require("../model/orderModel");
 let channel;
 
 const connectTChannel = async () => {
@@ -26,8 +27,32 @@ const pushToQueue = async (queueName, data) => {
   }
 };
 
+const createQueue = async (queueName) => {
+  const channel = await returnChannel();
+  await channel.assertQueue(queueName);
+  return channel;
+};
+
+const createOrderWithQueue = async (queueName) => {
+  await createQueue(queueName);
+  channel.consume(queueName, async (msg) => {
+    if (msg.content) {
+      const { products, userEmail } = JSON.parse(msg.contetnt.toString());
+      const totalPrice = products
+        .map((p) => +p.price)
+        .reduce(prev, (curr) => prev + curr, 0);
+      const newOrder = new OrderMdoel({ products, userEmail, totalPrice });
+      await newOrder.save();
+      channel.ack(msg);
+      pushToQueue("PRODUCT", newOrder);
+    }
+  });
+};
+
 module.exports = {
   connectTChannel,
   pushToQueue,
   returnChannel,
+  createOrderWithQueue,
+  createQueue,
 };
