@@ -31,7 +31,7 @@ AuthRouter.post("/login", async (req, res, next) => {
       throw { message: "Password is incorrect" };
     delete existUser.password;
     jwt.sign(
-      { email, userID: existUser._id, name: existUser.name },
+      { email, id: existUser._id, name: existUser.name },
       "secretKey",
       (err, token) => {
         if (!err) return res.json({ token });

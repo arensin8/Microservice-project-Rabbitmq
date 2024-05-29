@@ -1,3 +1,5 @@
+const { isAuthenticated } = require("../../isAuthenticated");
+const { pushToQueue } = require("../config/rabbitmq");
 const { ProductModel } = require("../model/productModel");
 
 const ProductRouter = require("express").Router();
@@ -16,10 +18,12 @@ ProductRouter.post("/create", async (req, res, next) => {
   }
 });
 
-ProductRouter.post("/buy", async (req, res, next) => {
+ProductRouter.post("/buy", isAuthenticated, async (req, res, next) => {
   try {
     const { productIDs = [] } = req.body;
-    const productsList = ProductModel.find({ _id: { $in: productIDs } });
+    const products = ProductModel.find({ _id: { $in: productIDs } });
+    const { email } = req.user;
+    await pushToQueue("ORDER", { products, userEmail: email });
   } catch (error) {
     next(error);
   }
