@@ -9,12 +9,6 @@ const connectTChannel = async () => {
     console.log("Cant connect to RabbitMQ server");
   }
 };
-const createQueue = async (queueName) => {
-  const channel = await createChannel();
-  await channel.assertQueue(queueName);
-  return channel;
-};
-
 const returnChannel = async () => {
   if (!channel) {
     channel = await connectTChannel();
@@ -22,8 +16,15 @@ const returnChannel = async () => {
   return channel;
 };
 
+const createQueue = async (queueName) => {
+  await returnChannel();
+  await channel.assertQueue(queueName);
+  return channel;
+};
+
 const pushToQueue = async (queueName, data) => {
   try {
+    await returnChannel();
     await channel.assertQueue();
     return channel.sendToQueue(queueName, Buffer.from(JSON.stringify(data)));
   } catch (error) {

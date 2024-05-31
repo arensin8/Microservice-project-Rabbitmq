@@ -21,13 +21,35 @@ ProductRouter.post("/create", async (req, res, next) => {
 ProductRouter.post("/buy", isAuthenticated, async (req, res, next) => {
   try {
     const { productIDs = [] } = req.body;
-    const products = ProductModel.find({ _id: { $in: productIDs } });
+
+    // Fetch products
+    const products = await ProductModel.find({ _id: { $in: productIDs } });
+    if (!products.length) {
+      return res
+        .status(404)
+        .json({ error: "No products found with the given IDs" });
+    }
+
     const { email } = req.user;
+
+    // Push to order queue
     await pushToQueue("ORDER", { products, userEmail: email });
+
+    // Create product queue and consume messages
     const channel = await createQueue("PRODUCT");
-    channel.consume("PRODUCT", (msg) => {
-      console.log(JSON.parse(msg.content.toString()));
-    });
+
+    // Acknowledge that the request was received and is being processed
+    res.status(202).json({ message: "Order is being processed" });
+
+    // Handle incoming messages from the queue
+    channel.consume(
+      "PRODUCT",
+      (msg) => {
+        console.log(JSON.parse(msg.content.toString()));
+        // Add further handling here if needed
+      },
+      { noAck: true }
+    );
   } catch (error) {
     next(error);
   }

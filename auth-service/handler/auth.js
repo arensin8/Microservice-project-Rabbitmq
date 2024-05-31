@@ -27,21 +27,21 @@ AuthRouter.post("/login", async (req, res, next) => {
     const { password, email } = req.body;
     const existUser = await UserMdoel.findOne({ email }, { __v: 0 });
     if (!existUser) throw { message: "User not found!" };
-    if (existUser.password !== password)
+
+    if (existUser.password !== password) {
       throw { message: "Password is incorrect" };
-    delete existUser.password;
+    }
+
     jwt.sign(
       { email, id: existUser._id, name: existUser.name },
       "secretKey",
       (err, token) => {
-        if (!err) return res.json({ token });
-        return res.json({ error: err.message });
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        return res.json({ token });
       }
     );
-    await newUser.save();
-    return res.json({
-      message: "new user created",
-    });
   } catch (error) {
     next(error);
   }

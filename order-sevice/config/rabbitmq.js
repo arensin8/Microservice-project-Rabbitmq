@@ -37,12 +37,14 @@ const createOrderWithQueue = async (queueName) => {
   await createQueue(queueName);
   channel.consume(queueName, async (msg) => {
     if (msg.content) {
-      const { products, userEmail } = JSON.parse(msg.contetnt.toString());
+      const { products, userEmail } = JSON.parse(msg.content.toString());
       const totalPrice = products
         .map((p) => +p.price)
-        .reduce(prev, (curr) => prev + curr, 0);
+        .reduce((prev, curr) => prev + curr, 0);
       const newOrder = new OrderMdoel({ products, userEmail, totalPrice });
       await newOrder.save();
+      console.log(products);
+      console.log(newOrder);
       channel.ack(msg);
       pushToQueue("PRODUCT", newOrder);
     }
